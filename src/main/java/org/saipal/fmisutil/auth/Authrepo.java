@@ -13,6 +13,7 @@ public class Authrepo {
 	public String orgId;
 	public String appId;
 	public String token;
+	public String jti;
 	public String adminId;
 	public Map<String,Object> extraInfo = new HashMap<>();
 }

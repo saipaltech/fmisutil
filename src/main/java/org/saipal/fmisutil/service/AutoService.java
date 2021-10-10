@@ -1,21 +1,28 @@
 package org.saipal.fmisutil.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.Tuple;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.saipal.fmisutil.ApplicationContextProvider;
+import org.saipal.fmisutil.auth.Authenticated;
 import org.saipal.fmisutil.parser.Element;
 import org.saipal.fmisutil.parser.RequestParser;
 import org.saipal.fmisutil.util.DB;
+import org.saipal.fmisutil.util.DateUtil;
+import org.saipal.fmisutil.util.LangService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Service
+@Component("AutoServiceMain")
 public class AutoService {
 
 	protected Logger log = LoggerFactory.getLogger(getClass());
@@ -23,8 +30,19 @@ public class AutoService {
 	@Autowired
 	protected DB db;
 
+	protected DateUtil dUtil = new DateUtil();
+
 	@Autowired
 	public RequestParser document;
+
+	@Autowired
+	protected LangService lService;
+
+	@Autowired
+	public Authenticated auth;
+
+	//@Autowired
+	//public AuthRequestHandler art;
 
 	public Element $(String elementId) {
 		return document.getElementById(elementId);
@@ -242,5 +260,57 @@ public class AutoService {
 		}
 		List<Tuple> list = db.getResultList(sql);
 		return list;
+	}
+	
+	public void logSession(String key, Object value) {
+		auth.setExtraInfo(key, value);
+		if (!auth.getJti().isBlank()) {
+			auth.setUserstate(key, (String) value);
+		}
+		
+	}
+
+	public void removeSessionAttribute(String key) {
+		auth.removeUserstate(key);
+	}
+
+	
+
+	public void removeCookie(HttpServletRequest request, HttpServletResponse response, String key) {
+		Cookie[] cookies = request.getCookies();
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals(key)) {
+				cookie.setPath("/");
+				cookie.setValue(null);
+				cookie.setMaxAge(0);
+				response.addCookie(cookie);
+			}
+		}
+	}
+
+	public void addCookie(String key, String value, HttpServletResponse response) {
+		Cookie cookie = new Cookie(key, value);
+		cookie.setPath("/");
+		response.addCookie(cookie);
+	}
+
+	public String session(String key) {
+	
+		String sesValue = auth.getUserState(key);
+		return sesValue == null ? "" : sesValue;
+	}
+	
+	public void insertKey(String key, String value) {
+
+		String sql = "insert into tbllanguagefile (english,nepali,keys,sysname,enterby,entrydate,appid,disabled) values (?,?,?,?,?,getdate(),"
+				+ session("appid") + ",0)";
+		List<String> args = new ArrayList<>();
+		args.add(value);
+		args.add(value);
+		args.add(key);
+		args.add(session("AppName"));
+		args.add(session("userid"));
+		// args.add(new Date(Calendar.getInstance().getTime().getTime()) + "");
+		// db.executeUpdate(sql, args);
 	}
 }
