@@ -80,7 +80,9 @@ public class RequestParser {
 								}
 								v = o.toString();
 							} else {
-								v = (String) o;
+								//System.out.println(o.toString());
+								v = jsonBody.getString(k);
+								
 							}
 							Element element = new Element();
 							element.setId(k);

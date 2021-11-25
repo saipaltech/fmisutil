@@ -3,11 +3,15 @@ package org.saipal.fmisutil.util;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
 import javax.transaction.Transactional;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -263,6 +267,65 @@ public class DB {
 		String ret = "";
 		ret = s.replace("'", "''");
 		return ret;
+	}
+	
+	public List<Map<String, Object>> getResultListMap(String sql, List<?> args) {
+		List<Tuple> t = getResultList(sql, args);
+		if (t == null) {
+			return null;
+		}
+		return getMapList(t);
+	}
+	
+	private List<Map<String, Object>> getMapList(List<Tuple> tuples) {
+		// extracts the alias
+		List<String> alias = fieldExtractor(tuples.get(0));
+		// prepares rows
+		List<Map<String, Object>> rows = new ArrayList<>();
+		for (Tuple f : tuples) {
+			Map<String, Object> insData = new LinkedHashMap<>();
+			for (String field : alias) {
+				insData.put(field, f.get(field));
+			}
+			rows.add(insData);
+		}
+		return rows;
+	}
+	private List<String> fieldExtractor(Tuple t) {
+		List<String> alias = new ArrayList<>();
+		if (t != null) {
+			List<TupleElement<?>> lte = t.getElements();
+			for (TupleElement<?> te : lte) {
+				alias.add(te.getAlias());
+			}
+		}
+		return alias;
+	}
+	
+	public List<Map<String, Object>> getResultListMap(String sql) {
+		List<Tuple> t = getResultList(sql);
+		if (t == null) {
+			return null;
+		}
+		return getMapList(t);
+
+	}
+	
+	public Map<String, Object> getSingleResultMap(String sql, List<?> args) {
+		Tuple t = getSingleResult(sql, args);
+		if (t == null) {
+			return null;
+		}
+		return getSingleMap(t);
+	}
+	
+	private Map<String, Object> getSingleMap(Tuple t) {
+		List<String> alias = fieldExtractor(t);
+		Map<String, Object> row = new LinkedHashMap<>();
+		for (String field : alias) {
+			row.put(field, t.get(field));
+		}
+		return row;
 	}
 	
 
