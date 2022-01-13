@@ -121,6 +121,25 @@ public class Authenticated {
 			}
 		}
 	}
+	
+	public void setUserstateOnLogin(String userid,String jti,Map<String,String> data) {
+		List<List<Object>> params = new ArrayList<>();
+		List<List<Object>> paramd = new ArrayList<>();
+		if(data!=null && data.size()>0) {
+			for(String key:data.keySet()) {
+				paramd.add(Arrays.asList(userid,key,jti));
+				params.add(Arrays.asList(userid,key,data.get(key),jti));
+				//params.add(Arrays.asList(getUserId(),key,getJti(),getUserId(),key,data.get(key),getJti()));
+			}
+			String sql = "delete from user_state where userid=? and state_key=? and sessionid=?";
+			db.executeBulk(sql, paramd);
+			sql = " insert into user_state(userid,state_key,state_value,sessionid) values (?,?,?,?)";
+			db.executeBulk(sql, params);
+			for(String key : data.keySet()) {
+				setExtraInfo(key, data.get(key));
+			}
+		}
+	}
 
 	public String getUserState(String key) {
 		/*String sql = "select state_value from user_state where userid=? and state_key=? and sessionid=?";
