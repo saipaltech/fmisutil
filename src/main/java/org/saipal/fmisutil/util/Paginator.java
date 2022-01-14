@@ -13,7 +13,8 @@ import org.saipal.fmisutil.ApplicationContextProvider;
 public class Paginator {
 	private String selections;
 	private String body;
-	private String countFiled;
+	private String countFiled="";
+	private String groupby="";
 
 	private int perPage = 10;
 	private int pageNo = 1;
@@ -21,10 +22,17 @@ public class Paginator {
 
 	private List<Object> params;
 	private String orderField = "";
-	private String orderDir = "";
 
 	public Paginator select(String selections) {
 		this.selections = selections;
+		return this;
+	}
+	public Paginator setCountField(String countField) {
+		this.countFiled = countField;
+		return this;
+	}
+	public Paginator setGroupBy(String groupby) {
+		this.groupby = groupby;
 		return this;
 	}
 
@@ -35,11 +43,6 @@ public class Paginator {
 
 	public Paginator setOrderBy(String orderField) {
 		this.orderField = orderField;
-		return this;
-	}
-
-	public Paginator setOrderDir(String orderDir) {
-		this.orderDir = orderDir;
 		return this;
 	}
 
@@ -79,10 +82,14 @@ public class Paginator {
 
 		DB db = ApplicationContextProvider.getBean(DB.class);
 		// total sql
-		if (countFiled != null) {
-			countSql = "select count(" + countFiled + ") as total " + body;
+		String sel = "*";
+		if(!countFiled.isBlank()) {
+			sel = this.countFiled;
+		}
+		if (groupby.isBlank()) {
+			countSql = "select count("+sel+") as total " + body;
 		} else {
-			countSql = "select count(*) as total " + body;
+			countSql = "select count("+sel+") as total from (select "+selections +" "+ body + " "+groupby+") as a";
 		}
 		Tuple totalResp;
 		// add perpage & limit
@@ -91,11 +98,13 @@ public class Paginator {
 		}
 		int offset = ((pageNo - 1) * perPage);
 		paginateSql = "select " + selections + " " + body;
+		
+		if(!groupby.isBlank()) {
+			paginateSql +=" "+ groupby;
+		}
+		
 		if (!orderField.isBlank()) {
-			if (orderDir.isBlank()) {
-				paginateSql += " order by " + orderField + " asc";
-			}
-			paginateSql += " order by " + orderField + " " + orderDir;
+			paginateSql += " order by " + orderField;
 		}
 		paginateSql += " limit " + offset + "," + perPage;
 		if (params != null) {
