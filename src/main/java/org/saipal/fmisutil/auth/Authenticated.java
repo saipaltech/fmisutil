@@ -19,9 +19,6 @@ public class Authenticated {
 	
 	@Autowired
 	DB db;
-	
-	@Autowired
-	LangService lang;
 
 	public String getToken() {
 		return getAuthRequest().token;
@@ -160,12 +157,6 @@ public class Authenticated {
 	public void clearAllStates() {
 		String sql = "delete from user_state where userid=? and sessionid=?";
 		db.execute(sql, Arrays.asList(getUserId(),getJti()));
-	}
-
-	public Tuple getEmpInfo() {
-		String sql = "select concat("+lang.tField("he.firstname")+",' ',"+lang.tField("he.lastname")+") as empname, "+lang.tField("aos.orgname")+" as orgname from hr_user_info hui join hr_employee he on he.id=hui.empid join admin_org_str aos on aos.orgidint=hui.orgid where hui.uid=?";
-		Tuple tpl = db.getSingleResult(sql, Arrays.asList(getUserId()));
-		return tpl;
 	}
 
 	public String getAdminLevel() {

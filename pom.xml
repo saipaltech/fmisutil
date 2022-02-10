@@ -15,7 +15,7 @@
 	<name>Fmis Utility</name>
 	<description>A Utility or Common Project for FMIS</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>14</java.version>
 		<github.global.server>github</github.global.server>
 	</properties>
 	<dependencies>
