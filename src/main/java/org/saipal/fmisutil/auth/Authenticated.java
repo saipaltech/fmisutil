@@ -187,4 +187,9 @@ public class Authenticated {
 			}
 		}
 	}
+
+	public void setAdminId(String admid) {
+		getAuthRequest().adminId = admid;
+		
+	}
 }
