@@ -18,6 +18,11 @@ public class Messenger {
 		info.put("message", message);
 		return this;
 	}
+	
+	public Messenger setMessage(Map<String, Object> message) {
+		info.put("message", message);
+		return this;
+	}
 
 	public Messenger setData(Object data) {
 		info.put("data", data);

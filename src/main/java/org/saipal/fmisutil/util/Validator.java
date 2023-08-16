@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Validator {
-	private Map<String, Map<String, String>> validationMessages = new HashMap<>();
+	private Map<String, Object> validationMessages = new HashMap<>();
 	
 	public Boolean isFailed() {
 		if(validationMessages.size() > 0) {
@@ -17,7 +17,7 @@ public class Validator {
 		return false;
 	}
 	
-	public Map<String, Map<String, String>> getErrorMessages(){
+	public Map<String, Object> getErrorMessages(){
 		return validationMessages;
 	}
 
@@ -107,15 +107,16 @@ public class Validator {
 
 	private void addFailureMessages(String field, String rule, String message) {
 		if (validationMessages == null) {
-			Map<String, String> msgs = new HashMap<>();
+			Map<String, Object> msgs = new HashMap<>();
 			validationMessages = new HashMap<>();
 			validationMessages.put(field, msgs);
 		}
 		message = message.replace("{}", getFieldName(field));
 		if (validationMessages.containsKey(field)) {
-			validationMessages.get(field).put(rule, message);
+			Map<String,Object> ex = (Map<String, Object>) validationMessages.get(field);
+			ex.put(rule, message);
 		} else {
-			Map<String, String> msgs = new HashMap<>();
+			Map<String, Object> msgs = new HashMap<>();
 			msgs.put(rule, message);
 			validationMessages.put(field, msgs);
 		}
